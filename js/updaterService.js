@@ -7,7 +7,7 @@ export class UpdaterService {
   constructor() {
     this.currentVersion = '2.5.0';
     this.currentBuild = 250;
-    this.githubRepo = localStorage.getItem('tradefx_github_repo') || '';
+    this.githubRepo = localStorage.getItem('tradefx_github_repo') || 'IrsadFaqih21/bot-tradefx';
     this.githubBranch = localStorage.getItem('tradefx_github_branch') || 'main';
     this.autoCheck = localStorage.getItem('tradefx_auto_update_check') !== 'false';
     this.isChecking = false;
