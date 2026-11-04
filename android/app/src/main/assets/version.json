@@ -1,0 +1,17 @@
+{
+  "version": "2.5.0",
+  "buildNumber": 250,
+  "releaseDate": "2026-11-04",
+  "title": "Bot TradeFX v2.5.0 Official Release",
+  "releaseNotes": [
+    "Rilis resmi perdana Bot TradeFX Android",
+    "Auto open posisi real-time dengan tombol Mulai & Stop",
+    "Tampilan murni laba profit/rugi tanpa grafik candlestick",
+    "5 Menu navigasi bawah: Riwayat, Broker, Terminal, Strategi, Akun",
+    "Dukungan koneksi Deriv WebSocket, Quotex, Pocket Option, & Simulasi",
+    "Sistem OTA (Over-The-Air) In-App Update langsung dari GitHub"
+  ],
+  "githubRepo": "",
+  "branch": "main"
+}
+

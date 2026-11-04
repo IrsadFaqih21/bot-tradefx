@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Bot TradeFX - Binary Option Auto Bot</title>
+  
+  <!-- Android & Web App Meta Tags -->
+  <meta name="theme-color" content="#0b0f19">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="icon" type="image/svg+xml" href="assets/icon.svg">
+  <link rel="apple-touch-icon" href="assets/icon.svg">
+  <link rel="manifest" href="manifest.json">
+  
+  <!-- CSS Stylesheet -->
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div id="app-container" class="app-layout">
+    
+    <!-- Top Header Bar -->
+    <header class="app-header">
+      <div class="header-left">
+        <div class="app-brand">
+          <div class="brand-icon-box">
+            <span class="brand-glyph">⚡</span>
+          </div>
+          <div class="brand-titles">
+            <h1 class="brand-name">Bot TradeFX</h1>
+            <span class="brand-sub">Binary Auto Bot v2.5</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="header-right">
+        <!-- Live Broker Connection Dot -->
+        <div class="broker-status-pill" id="header-broker-status">
+          <span class="status-dot dot-offline" id="header-broker-dot"></span>
+          <span class="broker-pill-text" id="header-broker-name">Menghubungkan...</span>
+        </div>
+
+        <!-- Account Mode Switcher (Demo / Real) -->
+        <button id="btn-toggle-account-mode" class="header-account-btn" title="Klik untuk ganti Akun Demo / Real">
+          <span class="mode-pill mode-demo" id="header-account-mode">DEMO</span>
+          <span class="balance-pill" id="header-account-balance">$10,000.00</span>
+        </button>
+
+        <!-- Sound Toggle -->
+        <button id="btn-toggle-sound" class="btn-icon-header" title="Aktif/Nonaktifkan Suara">🔔</button>
+      </div>
+    </header>
+
+    <!-- Main Content Area (Tab Views) -->
+    <main class="app-main-content">
+
+      <!-- ================= TAB 1: RIWAYAT TRADING ================= -->
+      <section id="view-history" class="tab-view hidden">
+        <div class="view-header">
+          <h2>Riwayat Trading</h2>
+          <div class="view-actions">
+            <button id="btn-export-history" class="btn-secondary-sm" title="Unduh CSV">📥 Unduh CSV</button>
+            <button id="btn-clear-history" class="btn-danger-sm" title="Hapus Semua">🗑️ Hapus</button>
+          </div>
+        </div>
+
+        <!-- Summary Statistics Row -->
+        <div class="stats-overview-grid">
+          <div class="stat-mini-card">
+            <span class="sm-lbl">Total Trade</span>
+            <span class="sm-val" id="hist-stat-total">0</span>
+          </div>
+          <div class="stat-mini-card">
+            <span class="sm-lbl text-profit">Menang (Win)</span>
+            <span class="sm-val text-profit" id="hist-stat-wins">0</span>
+          </div>
+          <div class="stat-mini-card">
+            <span class="sm-lbl text-loss">Kalah (Loss)</span>
+            <span class="sm-val text-loss" id="hist-stat-losses">0</span>
+          </div>
+          <div class="stat-mini-card">
+            <span class="sm-lbl text-cyan">Win Rate</span>
+            <span class="sm-val text-cyan" id="hist-stat-winrate">0%</span>
+          </div>
+        </div>
+
+        <!-- Net Profit Summary Card -->
+        <div class="net-summary-card">
+          <span class="net-title">Total Keuntungan Bersih</span>
+          <span class="net-amount text-neutral" id="hist-stat-net">$0.00</span>
+        </div>
+
+        <!-- Filter Pills -->
+        <div class="filter-pills-row">
+          <button class="history-filter-btn active" data-filter="ALL">Semua</button>
+          <button class="history-filter-btn" data-filter="WIN">Menang (Win)</button>
+          <button class="history-filter-btn" data-filter="LOSS">Kalah (Loss)</button>
+        </div>
+
+        <!-- Trade History List Container -->
+        <div class="history-records-scroll" id="history-records-list">
+          <!-- Dynamically populated by HistoryService -->
+        </div>
+      </section>
+
+      <!-- ================= TAB 2: BROKER CONNECTION ================= -->
+      <section id="view-broker" class="tab-view hidden">
+        <div class="view-header">
+          <h2>Koneksi Broker</h2>
+          <span class="badge-tech">Binary Option API</span>
+        </div>
+
+        <!-- Current Connection Status Card -->
+        <div id="broker-status-card" class="broker-info-card disconnected">
+          <div class="broker-info-header">
+            <div class="broker-brand-wrap">
+              <span class="broker-icon-badge">🔗</span>
+              <div>
+                <h3 id="broker-card-name">Deriv (Binary.com)</h3>
+                <span class="broker-status-sub">Status Koneksi Real-time</span>
+              </div>
+            </div>
+            <div class="latency-badge" id="broker-card-latency">34 ms</div>
+          </div>
+          <div class="broker-info-body">
+            <div class="info-row">
+              <span class="lbl">Saldo Akun Terkoneksi:</span>
+              <span class="val text-highlight" id="broker-card-balance">$10,000.00 (DEMO)</span>
+            </div>
+            <div class="info-row">
+              <span class="lbl">Protokol Keamanan:</span>
+              <span class="val text-profit">WebSocket SSL Encrypted (WSS)</span>
+            </div>
+          </div>
+          <button id="btn-disconnect-broker" class="btn-disconnect-link">Putus Sambungan Broker</button>
+        </div>
+
+        <!-- Broker Connection Form -->
+        <div class="card-form-container">
+          <div class="card-title-bar">
+            <h3>Hubungkan Akun Broker Baru</h3>
+            <span class="sub-hint">Pilih broker binary option Anda</span>
+          </div>
+
+          <form id="broker-connect-form" class="custom-form">
+            <div class="form-group">
+              <label for="select-broker-type">Pilih Platform Broker</label>
+              <select id="select-broker-type" class="form-input">
+                <option value="deriv">Deriv / Binary.com (WebSocket API Resmi)</option>
+                <option value="quotex">Quotex Broker (Partner API / Token)</option>
+                <option value="pocket">Pocket Option (Client SSID / API)</option>
+                <option value="olymp">Olymp Trade (Session Key / REST)</option>
+                <option value="simulation">Simulasi Real-time Market Data (Tanpa Risiko)</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="select-broker-mode">Tipe Akun Trading</label>
+              <select id="select-broker-mode" class="form-input">
+                <option value="demo">Akun Latihan (Demo Virtual - Aman)</option>
+                <option value="real">Akun Real (Live Uang Asli)</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="input-broker-token">API Token / Session Key Broker</label>
+              <input type="password" id="input-broker-token" class="form-input" placeholder="Masukkan API token akun broker Anda..." autocomplete="off">
+              <span class="input-hint">Dapatkan API Token dari menu Settings &gt; API Token di broker Anda.</span>
+            </div>
+
+            <div class="form-group">
+              <label for="input-broker-appid">App ID (Opsional untuk Deriv)</label>
+              <input type="text" id="input-broker-appid" class="form-input" placeholder="1089 (Default resmi)" value="1089">
+            </div>
+
+            <button type="submit" id="btn-connect-broker" class="btn-primary-action">
+              🔌 Sambungkan Broker
+            </button>
+          </form>
+        </div>
+
+        <!-- Broker Guide Info Card -->
+        <div class="guide-info-card">
+          <h4>💡 Cara Mendapatkan API Token</h4>
+          <ol class="guide-steps">
+            <li>Buka akun broker binary option Anda (Deriv / Quotex / Pocket Option).</li>
+            <li>Buka menu <strong>Pengaturan Akun (Settings) &gt; API Token / Keamanan</strong>.</li>
+            <li>Centang izin <strong>Read</strong> & <strong>Trade</strong>, lalu salin token.</li>
+            <li>Tempelkan token ke formulir di atas dan klik <em>Sambungkan Broker</em>.</li>
+          </ol>
+        </div>
+      </section>
+
+      <!-- ================= TAB 3: TERMINAL (DASHBOARD UTAMA) ================= -->
+      <section id="view-terminal" class="tab-view">
+        <!-- Terminal Header Info Bar -->
+        <div class="terminal-top-bar">
+          <div class="active-pair-pill">
+            <span class="label-dot"></span>
+            <span class="pair-name" id="terminal-active-pair">EUR/USD</span>
+          </div>
+          <div class="active-strategy-pill">
+            <span id="terminal-active-strategy">AI Confluence Engine</span>
+          </div>
+          <div class="status-pill pill-idle" id="terminal-bot-status-pill">
+            BOT STANDBY (IDLE)
+          </div>
+        </div>
+
+        <!-- HERO PROFIT / LOSS SECTION (Strictly Numerical P/L, NO Candlestick Chart) -->
+        <div class="profit-hero-card">
+          <div class="profit-card-header">
+            <span class="profit-badge badge-neutral" id="terminal-profit-badge">LABA / RUGI NET</span>
+            <button id="btn-reset-session" class="btn-reset-icon" title="Reset Sesi Trading">🔄 Reset Sesi</button>
+          </div>
+
+          <div class="profit-main-display">
+            <span class="profit-currency">$</span>
+            <h2 class="profit-number text-neutral" id="terminal-profit-val">0.00</h2>
+          </div>
+
+          <div class="profit-sub-note">
+            <span>Hasil Laba Bersih Sesi Berjalan (Real-Time)</span>
+          </div>
+
+          <!-- Session Grid Stats -->
+          <div class="hero-stats-grid">
+            <div class="h-stat-box">
+              <span class="h-stat-lbl">Menang</span>
+              <span class="h-stat-val text-profit" id="terminal-stat-wins">0</span>
+            </div>
+            <div class="h-stat-box">
+              <span class="h-stat-lbl">Kalah</span>
+              <span class="h-stat-val text-loss" id="terminal-stat-losses">0</span>
+            </div>
+            <div class="h-stat-box">
+              <span class="h-stat-lbl">Win Rate</span>
+              <span class="h-stat-val text-cyan" id="terminal-stat-winrate">0%</span>
+            </div>
+            <div class="h-stat-box">
+              <span class="h-stat-lbl">Martil</span>
+              <span class="h-stat-val text-warning" id="terminal-stat-martil">Step 0</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- ACTIVE RUNNING TRADE (Shown dynamically when a position is open) -->
+        <div id="active-trade-container" class="active-trade-wrapper hidden">
+          <!-- Populated dynamically when trade is active -->
+        </div>
+
+        <!-- BIG START / STOP ACTION BUTTON -->
+        <div class="action-hero-wrapper">
+          <button id="btn-start-stop" class="btn-hero btn-hero-start">
+            <div class="hero-btn-content">
+              <span class="hero-icon">🚀</span>
+              <div class="hero-btn-text">
+                <span class="title">MULAI AUTO BOT</span>
+                <span class="sub">Buka posisi otomatis sesuai strategi</span>
+              </div>
+            </div>
+          </button>
+        </div>
+
+        <!-- LIVE EXECUTION TERMINAL CONSOLE -->
+        <div class="terminal-console-card">
+          <div class="console-header">
+            <div class="console-title-group">
+              <span class="console-indicator"></span>
+              <h4>Live Execution Feed</h4>
+            </div>
+            <span class="console-sub-label">Aktivitas Bot Real-Time</span>
+          </div>
+          <div class="console-body" id="terminal-console-body">
+            <div class="console-row log-info">
+              <span class="log-time">[00:00:00]</span>
+              <span class="log-cat">[SYSTEM]</span>
+              <span class="log-msg">Bot TradeFX siap. Klik MULAI AUTO BOT untuk mengaktifkan open posisi otomatis.</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= TAB 4: SETTINGAN STRATEGI ================= -->
+      <section id="view-strategy" class="tab-view hidden">
+        <div class="view-header">
+          <h2>Settingan Strategi</h2>
+          <span class="badge-tech">Algoritma &amp; Risk</span>
+        </div>
+
+        <!-- Quick Presets Carousel -->
+        <div class="presets-section">
+          <span class="section-sub-heading">PILIHAN PRESET STRATEGI SIAP PAKAI</span>
+          <div class="presets-scroll-row">
+            <button class="preset-btn" data-preset="ai_hybrid">
+              <span class="p-icon">🤖</span>
+              <span class="p-title">AI Confluence</span>
+              <span class="p-tag">Akurasi Tinggi</span>
+            </button>
+            <button class="preset-btn" data-preset="scalper_1m">
+              <span class="p-icon">⚡</span>
+              <span class="p-title">Scalper 1M</span>
+              <span class="p-tag">Turbo Cepat</span>
+            </button>
+            <button class="preset-btn" data-preset="trend_follower">
+              <span class="p-icon">📈</span>
+              <span class="p-title">Trend EMA</span>
+              <span class="p-tag">Follow Trend</span>
+            </button>
+            <button class="preset-btn" data-preset="bollinger_reversal">
+              <span class="p-icon">🎯</span>
+              <span class="p-title">Bollinger</span>
+              <span class="p-tag">Reversal</span>
+            </button>
+            <button class="preset-btn" data-preset="safe_conservative">
+              <span class="p-icon">🛡️</span>
+              <span class="p-title">Safe Konservatif</span>
+              <span class="p-tag">Tanpa Martil</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Strategy Settings Form -->
+        <form id="strategy-form" class="custom-form card-form-container">
+          <div class="card-title-bar">
+            <h3>Parameter Trading &amp; Money Management</h3>
+          </div>
+
+          <!-- Trading Asset Pair -->
+          <div class="form-group">
+            <label for="strat-pair">Pasangan Aset (Pair)</label>
+            <select id="strat-pair" class="form-input">
+              <option value="EUR/USD">EUR/USD (Euro / US Dollar)</option>
+              <option value="GBP/USD">GBP/USD (Great British Pound)</option>
+              <option value="USD/JPY">USD/JPY (US Dollar / Japanese Yen)</option>
+              <option value="AUD/USD">AUD/USD (Australian Dollar)</option>
+              <option value="EUR/JPY">EUR/JPY (Euro / Japanese Yen)</option>
+              <option value="BTC/USD">BTC/USD (Bitcoin Crypto)</option>
+              <option value="ETH/USD">ETH/USD (Ethereum Crypto)</option>
+              <option value="EUR/USD (OTC)">EUR/USD (OTC Akhir Pekan)</option>
+              <option value="Volatility 100">Volatility 100 Index (Deriv Synthetic)</option>
+            </select>
+          </div>
+
+          <!-- Base Investment & Expiry Time -->
+          <div class="form-row-2">
+            <div class="form-group">
+              <label for="strat-base-amount">Investasi Awal ($)</label>
+              <input type="number" id="strat-base-amount" class="form-input" min="1" max="1000" step="1" value="10">
+            </div>
+            <div class="form-group">
+              <label for="strat-expiry">Durasi Expiry</label>
+              <select id="strat-expiry" class="form-input">
+                <option value="30">30 Detik (Turbo)</option>
+                <option value="60" selected>1 Menit (Standar)</option>
+                <option value="120">2 Menit</option>
+                <option value="180">3 Menit</option>
+                <option value="300">5 Menit (Stabil)</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Money Management Model -->
+          <div class="form-group">
+            <label for="strat-mm-type">Model Money Management</label>
+            <select id="strat-mm-type" class="form-input">
+              <option value="martingale">Martingale (Kompensasi Saat Kalah)</option>
+              <option value="flat">Flat Stake (Nominal Tetap Sama)</option>
+              <option value="compounding">Anti-Martingale / Compounding (Ganda Saat Menang)</option>
+              <option value="dalembert">D'Alembert (Tambah 1 Unit Saat Kalah)</option>
+            </select>
+          </div>
+
+          <!-- Martingale Multiplier & Max Steps -->
+          <div class="form-row-2">
+            <div class="form-group">
+              <label for="strat-martil-mult">Pengali Martil (x)</label>
+              <select id="strat-martil-mult" class="form-input">
+                <option value="2.0">2.0x (Standar)</option>
+                <option value="2.2" selected>2.2x (Rekomendasi Profit)</option>
+                <option value="2.5">2.5x (Agresif)</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="strat-martil-step">Maksimal Step Martil</label>
+              <select id="strat-martil-step" class="form-input">
+                <option value="1">1 Step (Sangat Aman)</option>
+                <option value="2">2 Step (Moderat)</option>
+                <option value="3" selected>3 Step (Standar)</option>
+                <option value="4">4 Step</option>
+                <option value="5">5 Step (Tinggi)</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Take Profit & Stop Loss -->
+          <div class="form-row-2">
+            <div class="form-group">
+              <label for="strat-tp">Target Take Profit ($)</label>
+              <input type="number" id="strat-tp" class="form-input" min="5" max="10000" step="5" value="50">
+              <span class="input-hint">Bot berhenti jika laba mencapai target</span>
+            </div>
+            <div class="form-group">
+              <label for="strat-sl">Batas Stop Loss ($)</label>
+              <input type="number" id="strat-sl" class="form-input" min="5" max="10000" step="5" value="30">
+              <span class="input-hint">Bot berhenti jika rugi menyentuh batas</span>
+            </div>
+          </div>
+
+          <!-- Signal Engine -->
+          <div class="form-group">
+            <label for="strat-engine">Mesin Analisa Sinyal Indikator</label>
+            <select id="strat-engine" class="form-input">
+              <option value="ai_hybrid" selected>AI Confluence Engine (RSI + EMA + Momentum)</option>
+              <option value="rsi">RSI Scalper Extreme (70/30 Reversal)</option>
+              <option value="ema_cross">EMA Trend Follower (EMA 9 &amp; 21 Cross)</option>
+              <option value="bollinger">Bollinger Bands Mean Reversion</option>
+            </select>
+          </div>
+
+          <!-- Trade Delay Interval -->
+          <div class="form-group">
+            <label for="strat-delay">Jeda Delay Antar Trade</label>
+            <select id="strat-delay" class="form-input">
+              <option value="5">5 Detik</option>
+              <option value="10" selected>10 Detik (Optimal)</option>
+              <option value="20">20 Detik</option>
+              <option value="30">30 Detik</option>
+            </select>
+          </div>
+
+          <div class="form-actions-row">
+            <button type="submit" class="btn-primary-action">💾 Simpan Pengaturan Strategi</button>
+            <button type="button" id="btn-reset-strategy" class="btn-outline-sm">Reset Standar</button>
+          </div>
+        </form>
+      </section>
+
+      <!-- ================= TAB 5: AKUN ================= -->
+      <section id="view-account" class="tab-view hidden">
+        <div class="view-header">
+          <h2>Akun &amp; Pengaturan</h2>
+          <span class="badge-tech">Profil Trader</span>
+        </div>
+
+        <!-- Profile Card -->
+        <div class="account-profile-card">
+          <div class="avatar-wrap">
+            <div class="avatar-circle">🤖</div>
+          </div>
+          <div class="profile-info">
+            <h3 class="profile-name">Trader VIP Bot</h3>
+            <span class="profile-tier">⭐ Member Tier: VIP Gold Trader</span>
+            <span class="profile-id">ID: FX-882910 | Status: Aktif</span>
+          </div>
+        </div>
+
+        <!-- Balance Management Card -->
+        <div class="account-balance-card">
+          <h4>Ringkasan Saldo Portofolio</h4>
+          <div class="acc-balance-row">
+            <div class="acc-bal-box">
+              <span class="acc-bal-lbl">Saldo Akun Latihan (Demo)</span>
+              <span class="acc-bal-val text-cyan" id="account-demo-balance">$10,000.00</span>
+              <button id="btn-recharge-demo" class="btn-secondary-xs">🔄 Isi Ulang $10,000</button>
+            </div>
+            <div class="acc-bal-box">
+              <span class="acc-bal-lbl">Saldo Akun Asli (Real)</span>
+              <span class="acc-bal-val text-profit" id="account-real-balance">$250.00</span>
+              <span class="acc-bal-sub">Tersinkronisasi Broker</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- App Preferences Card -->
+        <div class="card-form-container">
+          <div class="card-title-bar">
+            <h3>Preferensi &amp; Keamanan Aplikasi</h3>
+          </div>
+          
+          <div class="pref-switch-row">
+            <div class="pref-text">
+              <span class="pref-title">Efek Suara Notifikasi (Audio)</span>
+              <span class="pref-sub">Putar suara chimes saat Win, Loss, dan Open Posisi</span>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="chk-account-sound" checked>
+              <span class="slider round"></span>
+            </label>
+          </div>
+
+          <div class="pref-switch-row">
+            <div class="pref-text">
+              <span class="pref-title">Getaran Haptik Android (Vibration)</span>
+              <span class="pref-sub">Sensasi getar di HP saat bot mengeksekusi order</span>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="chk-account-haptic" checked>
+              <span class="slider round"></span>
+            </label>
+          </div>
+        </div>
+
+        <!-- In-App OTA Update Section -->
+        <div class="card-form-container">
+          <div class="card-title-bar">
+            <h3>Pembaruan Aplikasi (OTA In-App Update)</h3>
+            <span class="sub-hint">Update langsung tanpa download ulang APK</span>
+          </div>
+
+          <div class="info-row" style="margin-bottom: 8px;">
+            <span class="lbl">Versi Saat Ini:</span>
+            <span class="val text-highlight" id="lbl-current-version">v2.5.0 (Build 250)</span>
+          </div>
+
+          <div class="form-group">
+            <label for="input-github-repo">Repository GitHub (username/nama-repo)</label>
+            <input type="text" id="input-github-repo" class="form-input" placeholder="contoh: username/bot-tradefx">
+            <span class="input-hint">Hubungkan ke repositori GitHub Anda untuk auto-update.</span>
+          </div>
+
+          <div class="pref-switch-row">
+            <div class="pref-text">
+              <span class="pref-title">Auto Cek Update</span>
+              <span class="pref-sub">Periksa update otomatis saat bot dibuka</span>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="chk-auto-update" checked>
+              <span class="slider round"></span>
+            </label>
+          </div>
+
+          <button type="button" id="btn-check-update" class="btn-primary-action" style="margin-top: 6px;">
+            🔄 Cek Pembaruan Sekarang
+          </button>
+        </div>
+
+        <!-- App Information & Risk Disclaimer -->
+        <div class="guide-info-card">
+          <h4>ℹ️ Tentang Bot TradeFX Android</h4>
+          <p class="about-text">
+            <strong>Bot TradeFX v2.5.0 Android Edition</strong> adalah bot trading binary option otomatis yang dirancang khusus untuk kenyamanan trader dengan tampilan fokus murni pada <em>laba profit atau rugi</em> real-time tanpa gangguan candlestick market.
+          </p>
+          <div class="disclaimer-box">
+            <strong>⚠️ Peringatan Risiko:</strong> Trading binary options memiliki tingkat risiko modal. Selalu uji strategi Anda menggunakan Akun Demo sebelum mengaktifkan trading pada Akun Real.
+          </div>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- ================= BOTTOM NAVIGATION BAR (SIDEBAR AKSES BAWAH) ================= -->
+    <!-- Order strictly requested: 1. Riwayat Trading, 2. Broker, 3. Terminal, 4. Strategi, 5. Akun -->
+    <nav class="app-bottom-nav">
+      
+      <!-- 1. Riwayat Trading -->
+      <button class="bottom-nav-item" data-tab="history">
+        <div class="nav-icon-wrap">
+          <svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle>
+            <polyline points="12 6 12 12 16 14"></polyline>
+          </svg>
+        </div>
+        <span class="nav-label">Riwayat</span>
+      </button>
+
+      <!-- 2. Broker Connection -->
+      <button class="bottom-nav-item" data-tab="broker">
+        <div class="nav-icon-wrap">
+          <svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
+            <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+          </svg>
+        </div>
+        <span class="nav-label">Broker</span>
+      </button>
+
+      <!-- 3. Terminal (Hero Center Tab) -->
+      <button class="bottom-nav-item center-hero-nav active" data-tab="terminal">
+        <div class="nav-icon-wrap hero-nav-glow">
+          <svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <polyline points="4 17 10 11 4 5"></polyline>
+            <line x1="12" y1="19" x2="20" y2="19"></line>
+          </svg>
+        </div>
+        <span class="nav-label">Terminal</span>
+      </button>
+
+      <!-- 4. Settingan Strategi -->
+      <button class="bottom-nav-item" data-tab="strategy">
+        <div class="nav-icon-wrap">
+          <svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="4" y1="21" x2="4" y2="14"></line>
+            <line x1="4" y1="10" x2="4" y2="3"></line>
+            <line x1="12" y1="21" x2="12" y2="12"></line>
+            <line x1="12" y1="8" x2="12" y2="3"></line>
+            <line x1="20" y1="21" x2="20" y2="16"></line>
+            <line x1="20" y1="12" x2="20" y2="3"></line>
+            <line x1="1" y1="14" x2="7" y2="14"></line>
+            <line x1="9" y1="8" x2="15" y2="8"></line>
+            <line x1="17" y1="16" x2="23" y2="16"></line>
+          </svg>
+        </div>
+        <span class="nav-label">Strategi</span>
+      </button>
+
+      <!-- 5. Akun -->
+      <button class="bottom-nav-item" data-tab="account">
+        <div class="nav-icon-wrap">
+          <svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+            <circle cx="12" cy="7" r="4"></circle>
+          </svg>
+        </div>
+        <span class="nav-label">Akun</span>
+      </button>
+
+    </nav>
+
+    <!-- In-App OTA Update Modal Dialog -->
+    <div id="update-modal" class="modal-backdrop hidden">
+      <div class="modal-dialog">
+        <div class="modal-header">
+          <span class="modal-icon">🚀</span>
+          <div>
+            <h3 id="update-modal-title">Pembaruan Baru Tersedia!</h3>
+            <span class="modal-sub" id="update-modal-ver">Versi Baru: v2.5.1</span>
+          </div>
+        </div>
+        <div class="modal-body">
+          <p class="modal-desc">Pembaruan siap dipasang langsung ke dalam aplikasi tanpa perlu mengunduh ulang APK.</p>
+          <div class="release-notes-box">
+            <strong>Catatan Rilis:</strong>
+            <ul id="update-modal-notes" class="release-notes-list"></ul>
+          </div>
+          <div id="update-progress-wrap" class="update-progress-container hidden">
+            <div class="progress-bar-track">
+              <div id="update-progress-bar" class="progress-bar-fill" style="width: 0%;"></div>
+            </div>
+            <span id="update-progress-text" class="progress-sub-text">Mengunduh pembaruan (0%)...</span>
+          </div>
+        </div>
+        <div class="modal-actions" id="update-modal-actions">
+          <button type="button" id="btn-apply-update" class="btn-primary-action">⚡ Perbarui Sekarang</button>
+          <button type="button" id="btn-cancel-update" class="btn-outline-sm">Nanti Saja</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Floating Toast Notification Container -->
+    <div id="toast-container" class="toast-container"></div>
+
+  </div>
+
+  <!-- Main JavaScript Bundle -->
+  <script type="module" src="js/app.js"></script>
+
+  <!-- PWA Service Worker Registration -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./service-worker.js')
+          .then((reg) => console.log('SW Registered', reg.scope))
+          .catch((err) => console.log('SW Registration failed', err));
+      });
+    }
+  </script>
+</body>
+</html>
+

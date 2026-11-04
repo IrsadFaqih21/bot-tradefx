@@ -1,0 +1,22 @@
+{
+  "name": "bot-tradefx",
+  "version": "2.5.0",
+  "description": "Bot Trading Binary Option Real-Time Android App",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "serve": "node server.js",
+    "sync-android": "node sync-android.js"
+  },
+  "keywords": [
+    "trading-bot",
+    "binary-options",
+    "android",
+    "quotex",
+    "pocket-option",
+    "deriv",
+    "bot-tradefx"
+  ],
+  "author": "Bot TradeFX Team",
+  "license": "MIT"
+}

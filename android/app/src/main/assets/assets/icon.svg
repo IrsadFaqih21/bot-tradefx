@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#080C14"/>
+      <stop offset="100%" stop-color="#0E172A"/>
+    </linearGradient>
+    <linearGradient id="boltGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#06B6D4"/>
+      <stop offset="50%" stop-color="#3B82F6"/>
+      <stop offset="100%" stop-color="#10B981"/>
+    </linearGradient>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="16" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+  <rect width="512" height="512" rx="110" fill="url(#bgGrad)" stroke="#1E293B" stroke-width="8"/>
+  <circle cx="256" cy="256" r="190" fill="none" stroke="#1E293B" stroke-width="6" stroke-dasharray="12 10"/>
+  <!-- Glowing Lightning Bolt -->
+  <path d="M280 90 L160 270 L250 270 L210 422 L360 230 L270 230 Z" 
+        fill="url(#boltGrad)" 
+        filter="url(#glow)"/>
+</svg>
+

@@ -1,0 +1,19 @@
+{
+  "name": "Bot TradeFX - Binary Option Auto Bot",
+  "short_name": "Bot TradeFX",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#0a0e17",
+  "theme_color": "#0f172a",
+  "orientation": "portrait",
+  "description": "Bot Trading Binary Option Real-Time Tanpa Candlestick",
+  "icons": [
+    {
+      "src": "./assets/icon.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
+
