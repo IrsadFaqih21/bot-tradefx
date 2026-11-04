@@ -77,6 +77,7 @@ export class UpdaterService {
 
       const result = {
         hasUpdate,
+        isSilent,
         currentVersion: this.currentVersion,
         remoteVersion: remoteData.version,
         remoteBuild: remoteData.buildNumber,

@@ -251,6 +251,10 @@ body {
   animation: fadeIn 0.25s ease-out;
 }
 
+.hidden {
+  display: none !important;
+}
+
 .tab-view.hidden {
   display: none !important;
 }

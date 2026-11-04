@@ -370,7 +370,7 @@ class App {
         case 'check_complete':
           if (data.hasUpdate) {
             this.showUpdateModal(data);
-          } else {
+          } else if (!data.isSilent) {
             this.showToast(`Aplikasi sudah versi terbaru (${data.currentVersion})`, 'success');
           }
           break;
@@ -885,13 +885,17 @@ class App {
     if (progressWrap) progressWrap.classList.add('hidden');
     if (actions) actions.classList.remove('hidden');
 
+    modal.style.display = 'flex';
     modal.classList.remove('hidden');
     audioService.playTap();
   }
 
   hideUpdateModal() {
     const modal = document.getElementById('update-modal');
-    if (modal) modal.classList.add('hidden');
+    if (modal) {
+      modal.style.display = 'none';
+      modal.classList.add('hidden');
+    }
   }
 
   async handleApplyOTAUpdate() {
